@@ -28,6 +28,8 @@ static CODEX_IMAGE_GENERATION_ENABLED: AtomicBool =
     AtomicBool::new(DEFAULT_CODEX_IMAGE_GENERATION_ENABLED);
 static CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL: AtomicBool =
     AtomicBool::new(DEFAULT_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL);
+static CODEX_IMAGE_GENERATION_STRIP_TOOL: AtomicBool =
+    AtomicBool::new(DEFAULT_CODEX_IMAGE_GENERATION_STRIP_TOOL);
 static UPSTREAM_PROXY_URL: OnceLock<RwLock<Option<String>>> = OnceLock::new();
 static FREE_ACCOUNT_MAX_MODEL: OnceLock<RwLock<String>> = OnceLock::new();
 static COMPACT_MODEL: OnceLock<RwLock<String>> = OnceLock::new();
@@ -52,6 +54,7 @@ const DEFAULT_ENABLE_REQUEST_COMPRESSION: bool = true;
 const DEFAULT_USE_WEBSOCKET_UPSTREAM: bool = false;
 const DEFAULT_CODEX_IMAGE_GENERATION_ENABLED: bool = true;
 const DEFAULT_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL: bool = true;
+const DEFAULT_CODEX_IMAGE_GENERATION_STRIP_TOOL: bool = false;
 const DEFAULT_REQUEST_GATE_WAIT_TIMEOUT_MS: u64 = 0;
 const DEFAULT_TRACE_BODY_PREVIEW_MAX_BYTES: usize = 0;
 const DEFAULT_FRONT_PROXY_MAX_BODY_BYTES: usize = 0;
@@ -78,6 +81,8 @@ const ENV_USE_WEBSOCKET_UPSTREAM: &str = "CODEXMANAGER_USE_WEBSOCKET_UPSTREAM";
 const ENV_CODEX_IMAGE_GENERATION_ENABLED: &str = "CODEXMANAGER_CODEX_IMAGE_GENERATION_ENABLED";
 const ENV_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL: &str =
     "CODEXMANAGER_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL";
+const ENV_CODEX_IMAGE_GENERATION_STRIP_TOOL: &str =
+    "CODEXMANAGER_CODEX_IMAGE_GENERATION_STRIP_TOOL";
 const ENV_CODEX_IMAGE_MAIN_MODEL: &str = "CODEXMANAGER_CODEX_IMAGE_MAIN_MODEL";
 const ENV_CODEX_IMAGE_TOOL_MODEL: &str = "CODEXMANAGER_CODEX_IMAGE_TOOL_MODEL";
 const ENV_TOKEN_EXCHANGE_CLIENT_ID: &str = "CODEXMANAGER_CLIENT_ID";
@@ -441,6 +446,11 @@ pub(crate) fn codex_image_generation_enabled() -> bool {
 pub(crate) fn codex_image_generation_auto_inject_tool_enabled() -> bool {
     ensure_runtime_config_loaded();
     CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL.load(Ordering::Relaxed)
+}
+
+pub(crate) fn codex_image_generation_strip_tool_enabled() -> bool {
+    ensure_runtime_config_loaded();
+    CODEX_IMAGE_GENERATION_STRIP_TOOL.load(Ordering::Relaxed)
 }
 
 pub(crate) fn current_codex_image_main_model() -> String {
@@ -1155,6 +1165,13 @@ pub(super) fn reload_from_env() {
         env_bool_or(
             ENV_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL,
             DEFAULT_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL,
+        ),
+        Ordering::Relaxed,
+    );
+    CODEX_IMAGE_GENERATION_STRIP_TOOL.store(
+        env_bool_or(
+            ENV_CODEX_IMAGE_GENERATION_STRIP_TOOL,
+            DEFAULT_CODEX_IMAGE_GENERATION_STRIP_TOOL,
         ),
         Ordering::Relaxed,
     );

@@ -93,6 +93,7 @@
 
 - `CODEXMANAGER_CODEX_IMAGE_GENERATION_ENABLED`: enables the image-generation compatibility path. Default `1`.
 - `CODEXMANAGER_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL`: automatically injects the `image_generation` tool into normal `/v1/responses` requests. Default `1` to match the official Codex client behavior; explicit client-provided tools are not duplicated.
+- `CODEXMANAGER_CODEX_IMAGE_GENERATION_STRIP_TOOL`: removes client-provided `image_generation` tools from normal `/v1/responses` requests before forwarding upstream. Default `0`; set to `1` when the upstream group does not have image generation permission.
 - `CODEXMANAGER_CODEX_IMAGE_MAIN_MODEL`: main conversation model used internally by Images API compatibility endpoints. Default `gpt-5.4-mini`.
 - `CODEXMANAGER_CODEX_IMAGE_TOOL_MODEL`: image tool model. Default `gpt-image-2`.
 
@@ -166,6 +167,7 @@ CODEXMANAGER_GATEWAY_KEEPALIVE_INTERVAL_SECS=180
 CODEXMANAGER_UPSTREAM_TOTAL_TIMEOUT_MS=0
 CODEXMANAGER_CODEX_IMAGE_GENERATION_ENABLED=1
 CODEXMANAGER_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL=1
+CODEXMANAGER_CODEX_IMAGE_GENERATION_STRIP_TOOL=0
 CODEXMANAGER_CODEX_IMAGE_TOOL_MODEL=gpt-image-2
 # CODEXMANAGER_RPC_TOKEN=replace_with_your_static_token
 ```

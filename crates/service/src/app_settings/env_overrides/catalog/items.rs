@@ -91,6 +91,13 @@ pub(crate) const ENV_OVERRIDE_CATALOG: &[EnvOverrideCatalogItem] = &[
         "1",
     ),
     EnvOverrideCatalogItem::new(
+        "CODEXMANAGER_CODEX_IMAGE_GENERATION_STRIP_TOOL",
+        "Codex image_generation Tool filter",
+        ENV_OVERRIDE_SCOPE_SERVICE,
+        ENV_OVERRIDE_APPLY_MODE_RUNTIME,
+        "0",
+    ),
+    EnvOverrideCatalogItem::new(
         "CODEXMANAGER_CODEX_IMAGE_MAIN_MODEL",
         "Codex 图片主模型",
         ENV_OVERRIDE_SCOPE_SERVICE,

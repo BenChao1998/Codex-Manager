@@ -10,6 +10,8 @@ use std::time::{SystemTime, UNIX_EPOCH};
 const STRICT_REQUEST_PARAM_ALLOWLIST_ENV: &str = "CODEXMANAGER_STRICT_REQUEST_PARAM_ALLOWLIST";
 const CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL_ENV: &str =
     "CODEXMANAGER_CODEX_IMAGE_GENERATION_AUTO_INJECT_TOOL";
+const CODEX_IMAGE_GENERATION_STRIP_TOOL_ENV: &str =
+    "CODEXMANAGER_CODEX_IMAGE_GENERATION_STRIP_TOOL";
 const COMPACT_MODEL_ENV: &str = "CODEXMANAGER_COMPACT_MODEL";
 const COMPACT_API_PATH_ENV: &str = "CODEXMANAGER_COMPACT_API_PATH";
 const CODEXMANAGER_DB_PATH_ENV: &str = "CODEXMANAGER_DB_PATH";
@@ -539,6 +541,43 @@ fn responses_default_path_preserves_image_generation_tool() {
             .and_then(|tool_choice| tool_choice.get("type"))
             .and_then(serde_json::Value::as_str),
         Some("image_generation")
+    );
+}
+
+#[test]
+fn responses_default_path_strips_image_generation_tool_when_configured() {
+    let _guard = crate::test_env_guard();
+    let _strip_guard = RuntimeEnvGuard::set(CODEX_IMAGE_GENERATION_STRIP_TOOL_ENV, "1");
+    let body = json!({
+        "model": "gpt-5.4",
+        "input": "hello",
+        "tools": [
+            { "type": "web_search" },
+            { "type": "image_generation", "output_format": "png" }
+        ],
+        "tool_choice": {
+            "type": "image_generation"
+        },
+        "stream": true
+    });
+    let out = apply_request_overrides(
+        "/v1/responses",
+        serde_json::to_vec(&body).expect("serialize request body"),
+        None,
+        None,
+        Some("https://chatgpt.com/backend-api/codex"),
+    );
+    let value: serde_json::Value = serde_json::from_slice(&out).expect("parse output body");
+
+    let tools = value
+        .get("tools")
+        .and_then(serde_json::Value::as_array)
+        .expect("tools array");
+    assert_eq!(tools.len(), 1);
+    assert_eq!(tools[0]["type"], "web_search");
+    assert_eq!(
+        value.get("tool_choice").and_then(serde_json::Value::as_str),
+        Some("auto")
     );
 }
 

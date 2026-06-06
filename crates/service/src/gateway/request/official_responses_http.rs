@@ -387,6 +387,32 @@ fn ensure_image_generation_tool(path: &str, obj: &mut Map<String, Value>) -> boo
     true
 }
 
+fn strip_image_generation_tool(path: &str, obj: &mut Map<String, Value>) -> bool {
+    if !is_responses_path(path) || !runtime_config::codex_image_generation_strip_tool_enabled() {
+        return false;
+    }
+    let mut changed = false;
+    if let Some(tools_array) = obj.get_mut("tools").and_then(Value::as_array_mut) {
+        let before_len = tools_array.len();
+        tools_array.retain(|tool| {
+            tool.get("type")
+                .and_then(Value::as_str)
+                .map_or(true, |tool_type| tool_type != "image_generation")
+        });
+        changed |= tools_array.len() != before_len;
+    }
+    if obj
+        .get("tool_choice")
+        .and_then(|tool_choice| tool_choice.get("type"))
+        .and_then(Value::as_str)
+        == Some("image_generation")
+    {
+        obj.insert("tool_choice".to_string(), Value::String("auto".to_string()));
+        changed = true;
+    }
+    changed
+}
+
 fn ensure_parallel_tool_calls_bool(path: &str, obj: &mut Map<String, Value>) -> bool {
     if !is_responses_path(path) {
         return false;
@@ -726,6 +752,9 @@ pub(crate) fn apply_codex_http_request_rules(
         result.changed = true;
     }
     if ensure_image_generation_tool(path, obj) {
+        result.changed = true;
+    }
+    if strip_image_generation_tool(path, obj) {
         result.changed = true;
     }
 
